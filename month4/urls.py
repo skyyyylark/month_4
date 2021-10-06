@@ -28,4 +28,6 @@ urlpatterns = [
     path('api/v1/movies/<int:pk>', views.movies_item_view),
     path('api/v1/products', views.products),
     path('api/v1/products/<int:pk>', views.product_items),
+    path('api/v1/products/reviews', views.product_reviews),
+    path('api/v1/products/tags', views.product_tags),
 ]
