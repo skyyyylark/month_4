@@ -1,8 +1,9 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import MovieListSerializer, ProductsSerialzer
-from main.models import Movie, Product, Category, Tag, Review
+from .serializers import MovieListSerializer, ProductsSerialzer, PrReviewsSerializer, PrTagSerializer
+from main.models import Movie, Product, Category, Tag, Review, PrReviews, PrTag
+
 
 @api_view(['GET'])
 def print_hello(request):
@@ -45,3 +46,15 @@ def product_items(request, pk):
     data = ProductsSerialzer(product).data
     return Response(data=data)
 
+@api_view(['GET'])
+def product_reviews(request):
+    review = PrReviews.objects.all()
+    data = PrReviewsSerializer(review, many=True).data
+    return Response(data=data)
+
+
+@api_view(['GET'])
+def product_tags(request):
+    tag = PrTag.objects.all()
+    data = PrTagSerializer(tag, many=True).data
+    return Response(data=data)

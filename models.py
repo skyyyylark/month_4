@@ -54,4 +54,17 @@ class Review(models.Model):
     def __str__(self):
         return self.movie.name
 
+class PrReviews(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
+    review = models.TextField()
+    rate = models.IntegerField(default=5)
 
+    def __str__(self):
+        return self.review
+
+
+class PrTag(models.Model):
+    is_active = models.BooleanField(default=False)
+    tag = models.CharField(max_length=50)
+    def __str__(self):
+        return self.tag
