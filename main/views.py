@@ -58,3 +58,29 @@ def product_tags(request):
     tag = PrTag.objects.all()
     data = PrTagSerializer(tag, many=True).data
     return Response(data=data)
+
+@api_view(['GET' 'PUT' 'DELETE'])
+def product_id_view(request, id):
+    try:
+        product = Product.objects.get(id=id)
+    except Product.DoesNotExist:
+        return Response(data={'message': 'There are no such products'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        product.delete()
+        return Response(data={'message': 'Product has been removed successfully'})
+    elif request.method == 'PUT':
+        product.name = request.data.get('name')
+        product.description = request.data.get('description')
+        product.category = request.data.get('category')
+        product.tags.set(request.data['tags'])
+        product.price = request.data.get('price')
+        product.save()
+        return Response(data={'message': 'Product has been saved successfully',
+                              'product': ProductsSerialzer(product).data})
+
+    data = ProductsSerialzer(product, many=False).data
+    return Response(data=data)
+
+
+
