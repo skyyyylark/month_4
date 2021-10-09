@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import MovieListSerializer, ProductsSerialzer, PrReviewsSerializer, PrTagSerializer
+from .serializers import MovieListSerializer, ProductsSerialzer, PrReviewsSerializer, PrTagSerializer, CreateMovieValidateSerializer
 from main.models import Movie, Product, Category, Tag, Review, PrReviews, PrTag
 
 
@@ -16,8 +16,24 @@ def print_hello(request):
     }
     return Response(data=context, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def movies_list_view(request):
+    if request.method == 'POST':
+        serializer = CreateMovieValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                data={'message': 'error', 'errors': serializer.errors}
+            )
+        name = request.data.get('name', '')
+        duration = request.data.get('duration', 0)
+        date = request.data.get('date', '')
+        age_restriction = request.data.get('age_restriction', '')
+        movie = Movie.objects.create(name=name, duration=duration,
+                                     date=date, age_restriction=age_restriction)
+        movie.genres.set(request.data['genres'])
+        movie.save()
+        return Response(data={'message': 'you created movie!',
+                              'movie': MovieListSerializer(movie).data})
     movies = Movie.objects.all()
     data = MovieListSerializer(movies, many=True).data
     return Response(data=data)
@@ -59,7 +75,7 @@ def product_tags(request):
     data = PrTagSerializer(tag, many=True).data
     return Response(data=data)
 
-@api_view(['GET' 'PUT' 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def product_id_view(request, id):
     try:
         product = Product.objects.get(id=id)
