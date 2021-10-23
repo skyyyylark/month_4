@@ -1,8 +1,14 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import MovieListSerializer, ProductsSerialzer, PrReviewsSerializer, PrTagSerializer, CreateMovieValidateSerializer
+from .serializers import MovieListSerializer, ProductsSerialzer, PrReviewsSerializer, PrTagSerializer, \
+    CreateMovieValidateSerializer, CreateProductValidateSerializer
 from main.models import Movie, Product, Category, Tag, Review, PrReviews, PrTag
+from django.core.mail import send_mail
 
 
 @api_view(['GET'])
@@ -17,12 +23,13 @@ def print_hello(request):
     return Response(data=context, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def movies_list_view(request):
     if request.method == 'POST':
         serializer = CreateMovieValidateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
-                data={'message': 'error', 'errors': serializer.errors}
+                data={'message': 'error', 'errors': serializer.errors}, status=status.HTTP_406_NOT_ACCEPTABLE
             )
         name = request.data.get('name', '')
         duration = request.data.get('duration', 0)
@@ -49,6 +56,12 @@ def movies_item_view(request, pk):
 
 @api_view(['GET'])
 def products(request):
+    serializer = CreateProductValidateSerializer
+    if not serializer.is_valid():
+        return Response(
+            data={'message': 'error,',
+                  'errors': serializer.errors}
+        )
     product = Product.objects.all()
     data = ProductsSerialzer(product, many=True).data
     return Response(data=data)
@@ -86,6 +99,12 @@ def product_id_view(request, id):
         product.delete()
         return Response(data={'message': 'Product has been removed successfully'})
     elif request.method == 'PUT':
+        serializer = CreateProductValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                data={'message': 'error,',
+                                 'errors': serializer.errors}
+            )
         product.name = request.data.get('name')
         product.description = request.data.get('description')
         product.category = request.data.get('category')
@@ -99,4 +118,32 @@ def product_id_view(request, id):
     return Response(data=data)
 
 
+@api_view(['POST'])
+def login(request):
+    if request.method == 'POST':
+        username = request.data['username']
+        password = request.data['password']
+        user = authenticate(username=username, password=password)
+        if user:
+            Token.objects.filter(user=user).delete()
+            token = Token.objects.get(user=user)
+            return Response(data={
+                'token':token.key
+            })
+        else:
+            return Response(data={
+                'message':'user is not found'
+            }, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+def register(request):
+    if request.method == 'POST':
+        username = request.data['username']
+        password = request.data['password']
+        user = User.objects.create_user(username=username,
+                                        email=username,
+                                        password=password,
+                                        is_active = False)
+        return Response(data={
+            'message':'User created'
+        })

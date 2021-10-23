@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
@@ -69,3 +70,8 @@ class PrTag(models.Model):
     tag = models.CharField(max_length=50)
     def __str__(self):
         return self.tag
+
+class ConfirmCode(models.Model):
+    code = models.CharField(max_length=100)
+    valid_until = models.DateTimeField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
