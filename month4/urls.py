@@ -30,5 +30,7 @@ urlpatterns = [
     path('api/v1/products/<int:pk>', views.product_items),
     path('api/v1/products/reviews', views.product_reviews),
     path('api/v1/products/tags', views.product_tags),
-    path('/api/v1/products/<int:id>/', views.product_id_view),
+    path('api/v1/products/<int:id>/', views.product_id_view),
+    path('api/v1/login/', views.login),
+    path('api/v1/register/', views.register)
 ]
