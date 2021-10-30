@@ -32,5 +32,7 @@ urlpatterns = [
     path('api/v1/products/tags', views.product_tags),
     path('api/v1/products/<int:id>/', views.product_id_view),
     path('api/v1/login/', views.login),
-    path('api/v1/register/', views.register)
+    path('api/v1/register/', views.RegisterAPIView.as_view()),
+    path('api/v1/confirm/', views.ConfirmCode.as_view())
+
 ]
